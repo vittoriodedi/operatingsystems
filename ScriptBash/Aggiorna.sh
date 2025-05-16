@@ -1,0 +1,123 @@
+#!/bin/bash
+
+#Controllo inizialmente che l'utente abbia inserito 
+#2 input se non è così termino lo script
+if [[ "$#" -ne 2 ]]; then
+    echo "    "
+    echo "(!Errore!): Riesegui il programma con 2 pathname"
+    exit 1
+fi
+
+#Controllo se gli input sono 2 link simbolici nel caso lo siano
+#termino lo script e stampo a video quale dei 2 è un link simbolico
+if [ -L "$1" ] || [ -L "$2" ]; then 
+    if [ -L "$1" ]; then
+        echo "    "
+        echo "(!Attenzione!): '$2' E' un link simbolico."
+    else 
+        if [ -L "$2" ]; then
+            echo "    "
+            echo "(!Attenzione!): '$1' E' un link simbolico."
+        else 
+            echo "    "
+            echo "(!Attenzione!): '$1' e '$2' Sono dei link simbolici."
+        fi
+        exit 1
+    fi
+else 
+     true
+    
+fi
+
+#Assegno alla variabili pathassoluto i 
+#path assoluti degli eventuali percorsi relativi
+pathassoluto1=$(realpath "$1")
+pathassoluto2=$(realpath "$2")
+
+#Controllo se gli input sono 2 pathname validi, nel caso non lo
+#siano termino lo script e stampo a video quale dei 2 non è valido
+if [[ $pathassoluto1 = */* ]] && [[ $pathassoluto2 = */* ]]; then 
+    true
+else 
+    if [[ $pathassoluto1 = */* ]]; then
+        echo "    "
+        echo "(!Attenzione!): '$2' Non è un pathname valido."
+    else 
+        if [[ $pathassoluto2 = */* ]]; then
+            echo "    "
+            echo "(!Attenzione!): '$1' Non è un pathname valido."
+        else 
+            echo "    "
+            echo "(!Attenzione!): '$1' e '$2' Non sono pathname validi."
+        fi
+        exit 1
+    fi
+    
+fi
+
+#Controllo se gli input sono 2 directory valide, nel caso non lo
+#siano termino lo script e stampo a video quale delle 2 non è valida
+if [ -d "$pathassoluto1" ] && [ -d "$pathassoluto1" ]; then 
+    true
+else 
+    if [ -d "$1" ]; then
+        echo "    "
+        echo "(!Attenzione!): '$2' Non è una directory."
+    else 
+        if [ -d "$2" ]; then
+            echo "    "
+            echo "(!Attenzione!): '$1' Non è una directory."
+        else 
+            echo "    "
+            echo "(!Attenzione!): '$1' e '$2' Non è una directory."
+        fi
+        exit 1
+    fi
+fi
+
+#Ottengo il pathname senza il nome della directory
+pathrelativo1=$(dirname "$pathassoluto1") 
+pathrelativo2=$(dirname "$pathassoluto2")
+
+#Confronto i pathname parziali, nel caso abbiano lo stesso livello di 
+#profondità eseguo la parte restante dello script altrimenti esco 
+if [ "$pathrelativo1" != "$pathrelativo2" ]; then
+    echo "    "
+    echo "(!Errore!): Esegui lo script con due pathname validi"
+    exit 1
+else 
+    echo "                                 "
+    echo "Gli input sono validi, procederò con l'aggiornamento della seconda cartella"
+    echo "                                 "
+    for file in "$pathassoluto1"/*; do
+
+        #Controllo se è un file regolare
+        if [ -f "$file" ]; then 
+            nomefile=$(basename "$file")
+            filefinale="$2/$nomefile"
+
+            #Controllo se il file esiste nella seconda directory
+            if [ ! -e "$file" ]; then
+
+                #Se non esiste copio il file nella seconda directory
+                cp "$file" "$pathassoluto2"
+                echo "Ho copiato $nomefile in $pathassoluto2 perché non esiste nella destinazione."
+            else
+
+                #Controllo se il file nella prima directory è più 
+                #recente di quello contenuto nella seconda directory
+                if [ "$file" -nt "$filefinale" ]; then
+
+                    #Se è più recente copio il file nella seconda directory
+                    cp "$file" "$pathassoluto2"
+                    echo "Copiato $nomefile più recente in $pathassoluto2."
+
+                else
+                    #Se il file esiste già e non è più recente lo comunico
+                    echo "$nomefile esiste già in $pathassoluto2 e non è più recente."
+                fi
+            fi
+        fi
+    done
+
+fi
