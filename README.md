@@ -1,6 +1,6 @@
 # operatingsystems
 
-This repository contains my final project for the *Sistemi Operativi* course. The project consists of a Bash script that implements a custom command called `aggiorna`, which can be used to synchronize files from one folder to another based on specific conditions.
+This repository contains my final project for the “Sistemi Operativi” course. The project consists of a Bash script that implements a custom command called `aggiorna`, which can be used to synchronize files from one folder to another based on specific conditions.
 
 ## Description
 
